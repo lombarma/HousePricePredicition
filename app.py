@@ -1,26 +1,6 @@
 import streamlit as st
-import pickle
 import pandas as pd
 import numpy as np
-
-# Load model, columns and scaler
-with open("model.pkl", "rb") as f:
-    model = pickle.load(f)
-with open("columns.pkl", "rb") as f:
-    columns = pickle.load(f)
-with open("scaler.pkl", "rb") as f:
-    scaler = pickle.load(f)
-
-# Check if scaler is a numpy array (not a scikit-learn scaler object)
-is_array_scaler = isinstance(scaler, np.ndarray)
-
-# If it's a scikit-learn scaler, get feature names
-# Otherwise, we'll assume the columns are the feature names
-if not is_array_scaler and hasattr(scaler, 'feature_names_in_'):
-    feature_names = list(scaler.feature_names_in_)
-else:
-    # Just use the columns as feature names
-    feature_names = columns
 
 st.title("🏡 House Price Prediction")
 
@@ -31,43 +11,6 @@ area = st.number_input("Living Area (GrLivArea)", min_value=10, max_value=1000, 
 overall_qual = st.slider("Overall Quality (OverallQual)", min_value=1, max_value=10, value=5)
 year_built = st.number_input("Year Built", min_value=1900, max_value=2025, value=2000)
 neighborhood = st.selectbox("Neighborhood", ['NAmes', 'CollgCr', 'OldTown', 'Edwards', 'Somerst'])
-
-# Build initial dict
-user_data = {
-    'GrLivArea': area,
-    'OverallQual': overall_qual,
-    'YearBuilt': year_built
-}
-
-# Add neighborhood if it's in expected features
-neighborhood_feature = f'Neighborhood_{neighborhood}'
-if neighborhood_feature in feature_names:
-    user_data[neighborhood_feature] = 1
-
-# Create DataFrame with user input
-df_input = pd.DataFrame([user_data])
-
-# We need different approaches depending on what type of scaler we have
-if is_array_scaler:
-    # Since we don't have a proper scaler, we'll just use the raw data
-    df_model = df_input
-else:
-    # Full preprocessing with scikit-learn scaler
-
-    # Add missing columns expected by the scaler/model
-    for feat in feature_names:
-        if feat not in df_input.columns:
-            df_input[feat] = 0
-    
-    # Reorder columns
-    df_input = df_input[feature_names]
-    
-    # Apply scaler
-    df_scaled = scaler.transform(df_input)
-    df_scaled = pd.DataFrame(df_scaled, columns=feature_names)
-    
-    # Select model features
-    df_model = df_scaled[columns]
 
 # Prediction
 if st.button("Predict Price"):
