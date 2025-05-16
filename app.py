@@ -1,12 +1,15 @@
 import streamlit as st
+import pickle
 import pandas as pd
 import numpy as np
-import joblib
 
 # Load model, columns and scaler
-model = joblib.load("model.pkl")
-columns = joblib.load("columns.pkl")
-scaler = joblib.load("scaler.pkl")
+with open("model.pkl", "rb") as f:
+    model = pickle.load(f)
+with open("columns.pkl", "rb") as f:
+    columns = pickle.load(f)
+with open("scaler.pkl", "rb") as f:
+    scaler = pickle.load(f)
 feature_names = list(scaler.feature_names_in_)
 
 st.title("🏡 House Price Prediction")
